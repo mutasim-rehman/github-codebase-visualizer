@@ -1,6 +1,9 @@
 import os
 import hashlib
+import re
 from pathlib import Path
+
+JS_IMPORT_RE = re.compile(r'(?:import\s+.*?\s+from\s+[\'"](.*?)[\'"]|require\([\'"](.*?)[\'"]\))')
 
 # Common ignore directories
 IGNORE_DIRS = {".git", "node_modules", ".next", "venv", "__pycache__", ".venv", "env", ".idea", ".vscode", "dist", "build"}
@@ -70,12 +73,20 @@ def analyze_directory(root_path: str):
             
             is_generated = path.name in IGNORE_FILES or path.name.endswith(".min.js") or path.name.endswith(".min.css") or (ext == ".json" and path.stat().st_size > 500 * 1024)
             
+            file_imports = []
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     content = f.read()
                     lines = content.splitlines()
                     loc = len(lines)
                     f_hash = hashlib.md5(content.encode('utf-8')).hexdigest()
+                    
+                    if lang in ["JavaScript", "TypeScript", "React", "React TypeScript", "Vue", "Svelte"]:
+                        for match in JS_IMPORT_RE.finditer(content):
+                            imp = match.group(1) or match.group(2)
+                            if imp:
+                                file_imports.append(imp)
+                        file_imports = list(set(file_imports))
             except UnicodeDecodeError:
                 continue # Skip binary files
                 
@@ -103,7 +114,7 @@ def analyze_directory(root_path: str):
             if not is_generated:
                 lang_stats[lang]["loc"] += loc
             
-            file_list.append({"path": str(path.relative_to(root)), "loc": loc, "lang": lang, "full_path": str(path), "is_generated": is_generated, "is_duplicate": is_duplicate})
+            file_list.append({"path": str(path.relative_to(root)), "loc": loc, "lang": lang, "full_path": str(path), "is_generated": is_generated, "is_duplicate": is_duplicate, "imports": file_imports})
             
     # Top 5 largest files
     file_list.sort(key=lambda x: x["loc"], reverse=True)

@@ -11,6 +11,7 @@ def print_summary(stats, hotspots):
     print_tree(stats["all_files"])
     print_language_stats(stats["lang_stats"])
     print_top_files(stats["top_files"])
+    print_dependency_graph(stats["all_files"])
     print_duplicates(stats.get("duplicates", []))
     print_priority_fixes(hotspots)
     print_hotspots(hotspots)
@@ -146,6 +147,30 @@ def print_python_stats(all_files):
         table.add_row(f['path'], str(ast['classes']), str(ast['functions']), deps)
         
     console.print(table)
+
+def print_dependency_graph(all_files):
+    # Filter files with >= 1 imports
+    coupled_files = [f for f in all_files if len(f.get("imports", [])) > 0]
+    coupled_files.sort(key=lambda x: len(x["imports"]), reverse=True)
+    
+    if not coupled_files:
+        return
+        
+    console.print(Panel(
+        "Directed graph showing heavily coupled modules and their imported dependencies.",
+        title="[blue]Dependency Graph[/blue]",
+        subtitle="Top Coupled Files"
+    ))
+    
+    for f in coupled_files[:10]:
+        tree = Tree(f"📄 [bold cyan]{f['path']}[/bold cyan] [dim]({f['lang']}) - {len(f['imports'])} imports[/dim]")
+        for imp in sorted(f["imports"])[:15]:
+            icon = "📦" if not imp.startswith('.') and not imp.startswith('/') else "🔗"
+            tree.add(Text(f"{icon} {imp}", style="blue"))
+        if len(f["imports"]) > 15:
+            tree.add(Text(f"   ... and {len(f['imports']) - 15} more", style="dim"))
+        console.print(tree)
+    console.print("")
 
 def print_duplicates(duplicates):
     if not duplicates:
