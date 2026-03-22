@@ -6,6 +6,7 @@ from analyzer.core import analyze_directory
 from analyzer.git_utils import clone_repo
 from analyzer.hotspots import detect_hotspots
 from analyzer.output import print_summary
+from analyzer.git_history import analyze_git_history
 
 console = Console()
 
@@ -34,6 +35,7 @@ def main():
         
     with console.status("[bold green]Crunching numbers...[/bold green]"):
         stats = analyze_directory(target_path)
+        stats["trend"] = analyze_git_history(target_path)
         hotspots = detect_hotspots(stats["all_files"])
         
     print_summary(stats, hotspots)

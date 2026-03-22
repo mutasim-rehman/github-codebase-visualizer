@@ -8,6 +8,8 @@ console = Console()
 
 def print_summary(stats, hotspots):
     print_basic_stats(stats)
+    if stats.get("trend"):
+        print_loc_trend(stats["trend"])
     print_tree(stats["all_files"])
     print_language_stats(stats["lang_stats"])
     print_top_files(stats["top_files"])
@@ -24,6 +26,40 @@ def print_basic_stats(stats):
         f"[dim]Generated/Vendor LOC: {stats.get('generated_loc', 0)}[/dim]"
     )
     console.print(Panel(summary_text, title="Codebase Summary"))
+
+def print_loc_trend(trend_data):
+    if not trend_data:
+        return
+        
+    console.print(Panel(
+        "Net LOC additions vs deletions aggregated per month.",
+        title="[magenta]Codebase LOC Growth Timeline[/magenta]",
+        subtitle="12-Month Git History Analysis"
+    ))
+    
+    max_cum = max((t["cumulative"] for t in trend_data), default=0)
+    min_cum = min((t["cumulative"] for t in trend_data), default=0)
+    baseline = 0 if min_cum >= 0 else min_cum
+    range_val = (max_cum - baseline) if (max_cum - baseline) > 0 else 1
+    
+    table = Table(box=None, show_header=False)
+    table.add_column("Month", style="cyan")
+    table.add_column("Bar")
+    table.add_column("Net", justify="right")
+    
+    for t in trend_data:
+        val = t["cumulative"] - baseline
+        length = int((val / range_val) * 40)
+        bar = "█" * length
+        bar_str = f"[blue]{bar}[/blue]"
+        
+        net_str = f"+{t['net']}" if t['net'] >= 0 else str(t['net'])
+        net_color = "green" if t['net'] >= 0 else "red"
+        
+        table.add_row(t["month"], bar_str, f"[{net_color}]{net_str}[/{net_color}] LOC")
+        
+    console.print(table)
+    console.print("")
 
 def print_language_stats(lang_stats):
     table = Table(title="Language Distribution")
