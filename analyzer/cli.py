@@ -15,6 +15,8 @@ def main():
     parser.add_argument("path", help="Local directory path or GitHub URL to analyze")
     parser.add_argument("--depth", type=int, default=1, help="Depth for GitHub shallow clone (default 1)")
     parser.add_argument("--radar", action="store_true", help="Generate and open an interactive HTML Radar Chart of file complexity")
+    parser.add_argument("--minimap", action="store_true", help="Print a detailed File-to-Function Mini-Map for top risky files")
+    parser.add_argument("--diagram", action="store_true", help="Generate a Mermaid architecture diagram file")
     
     args = parser.parse_args()
     
@@ -49,5 +51,15 @@ def main():
                 console.print(f"\n🚀 [bold magenta]Complexity Radar Chart launched in browser![/bold magenta] [dim]({path})[/dim]")
             else:
                 console.print("\n[yellow]Not enough data to generate radar chart![/yellow]")
-    
+                
+    if args.minimap:
+        from analyzer.output import print_minimap
+        print_minimap(stats["all_files"])
+        
+    if args.diagram:
+        from analyzer.mermaid_generator import generate_mermaid_diagrams
+        with console.status("[bold green]Generating Mermaid Architecture Diagrams...[/bold green]"):
+            path = generate_mermaid_diagrams(stats)
+            console.print(f"\n✨ [bold cyan]Architecture diagrams saved successfully to {path}![/bold cyan]")
+            
     return 0

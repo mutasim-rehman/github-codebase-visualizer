@@ -22,9 +22,22 @@ def analyze_python_file(filepath: str):
             self.longest_func = {"name": None, "loc": 0}
             self.imports = set()
             self.problematic_functions = []
+            self.structure = {"classes": [], "functions": []}
             
         def visit_ClassDef(self, node):
             self.classes += 1
+            class_info = {"name": node.name, "bases": [], "methods": []}
+            for base in node.bases:
+                if isinstance(base, ast.Name):
+                    class_info["bases"].append(base.id)
+            
+            for item in node.body:
+                if isinstance(item, ast.FunctionDef) or isinstance(item, ast.AsyncFunctionDef):
+                    class_info["methods"].append({
+                        "name": item.name,
+                        "loc": getattr(item, "end_lineno", item.lineno) - item.lineno + 1 if hasattr(item, "end_lineno") and item.end_lineno else 0
+                    })
+            self.structure["classes"].append(class_info)
             self.generic_visit(node)
             
         def visit_FunctionDef(self, node):
@@ -48,6 +61,10 @@ def analyze_python_file(filepath: str):
                     "loc": loc,
                     "nesting": func_max
                 })
+                
+            # Filter methods out of global top-level functions by just ensuring we add everything here,
+            # as minimap treats them all flatly under the file anyway
+            self.structure["functions"].append({"name": node.name, "loc": loc})
                 
             self.current_nesting = old_current
             self.max_nesting = max(old_max, func_max)
@@ -92,5 +109,6 @@ def analyze_python_file(filepath: str):
         "max_nesting": visitor.max_nesting,
         "longest_function": visitor.longest_func,
         "imports": list(visitor.imports),
-        "problematic_functions": visitor.problematic_functions
+        "problematic_functions": visitor.problematic_functions,
+        "structure": visitor.structure
     }

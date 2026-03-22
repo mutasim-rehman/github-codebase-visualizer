@@ -184,6 +184,53 @@ def print_python_stats(all_files):
         
     console.print(table)
 
+def print_minimap(all_files):
+    # Only print for top 10 files by risk_score so it doesn't flood terminal
+    minimap_files = sorted(all_files, key=lambda x: x.get("score", 0), reverse=True)[:10]
+    
+    console.print(Panel(
+        "Detailed functional tree mapping for the most complex modules.",
+        title="[blue]File-to-Function Mini-Map[/blue]",
+        subtitle="Top 10 High Risk Modules"
+    ))
+    
+    for f in minimap_files:
+        has_py = "ast_metrics" in f and f["ast_metrics"] and "structure" in f["ast_metrics"]
+        has_ts = "ts_metrics" in f and f["ts_metrics"]
+        
+        if not has_py and not has_ts:
+            continue
+            
+        risk = f.get('risk_level', 'Low')
+        color = "red" if risk == "High" else "orange1" if risk == "Medium" else "green"
+        tree = Tree(f"📄 [{color}]{f['path']}[/{color}] [dim]({f['loc']} LOC)[/dim]")
+        
+        if has_py:
+            struct = f["ast_metrics"]["structure"]
+            for c in struct["classes"]:
+                c_tree = tree.add(f"🏗️  [bold yellow]class {c['name']}[/bold yellow]")
+                for b in c.get("bases", []):
+                    c_tree.add(f"  ↳ [dim]inherits {b}[/dim]")
+                for m in c["methods"]:
+                    c_tree.add(f"⚡ [green]def {m['name']}[/green] [dim]({m['loc']} LOC)[/dim]")
+            for fn in struct["functions"]:
+                tree.add(f"⚡ [green]def {fn['name']}[/green] [dim]({fn['loc']} LOC)[/dim]")
+                
+        if has_ts:
+            struct = f["ts_metrics"]
+            for c in struct["classes"]:
+                c_tree = tree.add(f"🏗️  [bold yellow]class {c['name']}[/bold yellow]")
+                for b in c.get("bases", []):
+                    c_tree.add(f"  ↳ [dim]extends {b}[/dim]")
+            for i in struct["interfaces"]:
+                tree.add(f"🧩 [blue]interface {i['name']}[/blue]")
+            for fn in struct["functions"]:
+                tree.add(f"⚡ [green]func/const {fn['name']}[/green]")
+                
+        if len(tree.children) > 0:
+            console.print(tree)
+            console.print("")
+
 def print_dependency_graph(all_files):
     # Filter files with >= 1 imports
     coupled_files = [f for f in all_files if len(f.get("imports", [])) > 0]

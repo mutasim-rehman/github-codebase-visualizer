@@ -48,6 +48,20 @@ def detect_hotspots(files_list):
                 f["classes"] = ast_metrics["classes"]
                 f["functions"] = ast_metrics["functions"]
                 
+        elif f["lang"] in ["JavaScript", "TypeScript", "React", "React TypeScript", "Vue", "Svelte"]:
+            from analyzer.ts_extractor import extract_ts_structure
+            ts_metrics = extract_ts_structure(f["full_path"])
+            f["ts_metrics"] = ts_metrics
+            
+            if ts_metrics:
+                # Add light score heuristics for huge JS classes/components
+                if len(ts_metrics.get("classes", [])) > 5:
+                    score += 1
+                    reasons.append(f"Too many classes/components ({len(ts_metrics['classes'])})")
+                if len(ts_metrics.get("functions", [])) > 15:
+                    score += 1
+                    reasons.append(f"Too many functions/hooks ({len(ts_metrics['functions'])})")
+                
         f["score"] = score
         if score >= 4:
             f["risk_level"] = "High"
