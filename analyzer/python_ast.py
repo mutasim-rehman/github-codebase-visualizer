@@ -1,4 +1,15 @@
 import ast
+import json
+
+class CallCollector(ast.NodeVisitor):
+    def __init__(self):
+        self.calls = []
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Name):
+            self.calls.append(node.func.id)
+        elif isinstance(node.func, ast.Attribute):
+            self.calls.append(node.func.attr)
+        self.generic_visit(node)
 
 def analyze_python_file(filepath: str):
     """Parses a Python file and returns AST metrics."""
@@ -33,9 +44,12 @@ def analyze_python_file(filepath: str):
             
             for item in node.body:
                 if isinstance(item, ast.FunctionDef) or isinstance(item, ast.AsyncFunctionDef):
+                    call_collector = CallCollector()
+                    call_collector.visit(item)
                     class_info["methods"].append({
                         "name": item.name,
-                        "loc": getattr(item, "end_lineno", item.lineno) - item.lineno + 1 if hasattr(item, "end_lineno") and item.end_lineno else 0
+                        "loc": getattr(item, "end_lineno", item.lineno) - item.lineno + 1 if hasattr(item, "end_lineno") and item.end_lineno else 0,
+                        "calls": list(set(call_collector.calls))
                     })
             self.structure["classes"].append(class_info)
             self.generic_visit(node)
@@ -62,9 +76,16 @@ def analyze_python_file(filepath: str):
                     "nesting": func_max
                 })
                 
+            call_collector = CallCollector()
+            call_collector.visit(node)
+                
             # Filter methods out of global top-level functions by just ensuring we add everything here,
             # as minimap treats them all flatly under the file anyway
-            self.structure["functions"].append({"name": node.name, "loc": loc})
+            self.structure["functions"].append({
+                "name": node.name, 
+                "loc": loc,
+                "calls": list(set(call_collector.calls))
+            })
                 
             self.current_nesting = old_current
             self.max_nesting = max(old_max, func_max)

@@ -61,6 +61,47 @@ def generate_mermaid_diagrams(stats, output_path="architecture.md"):
                 
     lines.append("```\n")
     
+    # 3. Execution Call Graph (Internal)
+    lines.append("## Internal Function Call Graph\n")
+    lines.append("```mermaid\ngraph TD")
+    
+    has_calls = False
+    for f in all_files:
+        if "ast_metrics" in f and f["ast_metrics"] and "structure" in f["ast_metrics"]:
+            struct = f["ast_metrics"]["structure"]
+            for fn in struct.get("functions", []):
+                for call in fn.get("calls", []):
+                    has_calls = True
+                    lines.append(f'    {fn["name"]} --> {call}')
+                    
+        if "ts_metrics" in f and f["ts_metrics"]:
+            struct = f["ts_metrics"]
+            for fn in struct.get("functions", []):
+                for call in fn.get("calls", []):
+                    has_calls = True
+                    lines.append(f'    {fn["name"]} --> {call}')
+                    
+    if not has_calls:
+        lines.append("    %% No internal calls detected")
+    lines.append("```\n")
+    
+    # 4. React Component Render Tree
+    lines.append("## React Render Tree\n")
+    lines.append("```mermaid\ngraph TD")
+    
+    has_renders = False
+    for f in all_files:
+        if "ts_metrics" in f and f["ts_metrics"]:
+            struct = f["ts_metrics"]
+            for fn in struct.get("functions", []):
+                for render in fn.get("renders", []):
+                    has_renders = True
+                    lines.append(f'    {fn["name"]} --> {render}')
+                    
+    if not has_renders:
+        lines.append("    %% No React rendering detected")
+    lines.append("```\n")
+    
     with open(output_path, "w", encoding="utf-8") as out:
         out.write("\n".join(lines))
         
