@@ -150,14 +150,24 @@ def print_python_stats(all_files):
 def print_duplicates(duplicates):
     if not duplicates:
         return
-    table = Table(title="Duplicate Files Detection")
-    table.add_column("Duplicate Path", style="yellow")
-    table.add_column("Original Path", style="cyan")
-    
-    for d in duplicates[:10]:
-        table.add_row(d["path"], d["duplicate_of"])
         
-    console.print(table)
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for d in duplicates:
+        groups[d["duplicate_of"]].append(d["path"])
+        
+    console.print(Panel(
+        "Files with exactly identical code content detected via hashing.", 
+        title="[yellow]Duplicate File Graph[/yellow]", 
+        subtitle="Edges point to redundant copies"
+    ))
+    
+    for original, dup_list in list(groups.items())[:15]: # Limit to 15 duplicate groups
+        tree = Tree(f"📄 [bold cyan]{original}[/bold cyan] [dim](Original)[/dim]")
+        for dup in dup_list:
+            tree.add(f"🔗 [yellow]{dup}[/yellow] [dim](Duplicate)[/dim]")
+        console.print(tree)
+    console.print("")
 
 def print_priority_fixes(hotspots):
     # Filter only High Risk items
