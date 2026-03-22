@@ -1,0 +1,1000 @@
+{
+  "files": [
+    {
+      "path": "frontend\\package-lock.json",
+      "loc": 4260,
+      "lang": "JSON",
+      "risk": "Medium",
+      "score": 3,
+      "is_dup": false,
+      "is_gen": true,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        10,
+        0.0,
+        2.25,
+        0.0,
+        4.5
+      ]
+    },
+    {
+      "path": "architecture.md",
+      "loc": 2113,
+      "lang": "Markdown",
+      "risk": "Medium",
+      "score": 3,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        10,
+        0.0,
+        2.25,
+        0.0,
+        4.5
+      ]
+    },
+    {
+      "path": "analyzer\\dashboard.py",
+      "loc": 342,
+      "lang": "Python",
+      "risk": "Medium",
+      "score": 3,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "generate_dashboard",
+          "loc": 337
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "webbrowser",
+        "tempfile",
+        "json",
+        "os"
+      ],
+      "radar": [
+        3.42,
+        0.2,
+        3,
+        1.3333333333333333,
+        4.5
+      ]
+    },
+    {
+      "path": "frontend\\src\\index.css",
+      "loc": 322,
+      "lang": "CSS",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        3.22,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "analyzer\\output.py",
+      "loc": 314,
+      "lang": "Python",
+      "risk": "High",
+      "score": 8,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "print_summary",
+          "loc": 11
+        },
+        {
+          "name": "print_basic_stats",
+          "loc": 8
+        },
+        {
+          "name": "print_loc_trend",
+          "loc": 33
+        },
+        {
+          "name": "print_language_stats",
+          "loc": 13
+        },
+        {
+          "name": "_get_label",
+          "loc": 29
+        },
+        {
+          "name": "_build_rich_tree",
+          "loc": 12
+        },
+        {
+          "name": "print_tree",
+          "loc": 75
+        },
+        {
+          "name": "print_top_files",
+          "loc": 10
+        },
+        {
+          "name": "print_python_stats",
+          "loc": 21
+        },
+        {
+          "name": "print_minimap",
+          "loc": 46
+        },
+        {
+          "name": "print_dependency_graph",
+          "loc": 23
+        },
+        {
+          "name": "print_duplicates",
+          "loc": 21
+        },
+        {
+          "name": "print_priority_fixes",
+          "loc": 17
+        },
+        {
+          "name": "print_hotspots",
+          "loc": 17
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "rich",
+        "collections"
+      ],
+      "radar": [
+        3.14,
+        2.8,
+        4,
+        0.6666666666666666,
+        10
+      ]
+    },
+    {
+      "path": "frontend\\src\\App.css",
+      "loc": 184,
+      "lang": "CSS",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        1.84,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\src\\components\\Dashboard.tsx",
+      "loc": 170,
+      "lang": "React TypeScript",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [
+        "lucide-react",
+        "react",
+        "../App",
+        "./RadarChart"
+      ],
+      "radar": [
+        1.7,
+        0.0,
+        0,
+        1.3333333333333333,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\src\\components\\Sidebar.tsx",
+      "loc": 140,
+      "lang": "React TypeScript",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "toggleFolder",
+          "loc": 0
+        },
+        {
+          "name": "renderTree",
+          "loc": 0
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "react",
+        "../App",
+        "lucide-react"
+      ],
+      "radar": [
+        1.4,
+        0.4,
+        0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "path": "analyzer\\python_ast.py",
+      "loc": 135,
+      "lang": "Python",
+      "risk": "Medium",
+      "score": 3,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "__init__",
+          "loc": 2
+        },
+        {
+          "name": "visit_Call",
+          "loc": 6
+        },
+        {
+          "name": "__init__",
+          "loc": 9
+        },
+        {
+          "name": "visit_ClassDef",
+          "loc": 18
+        },
+        {
+          "name": "visit_FunctionDef",
+          "loc": 35
+        },
+        {
+          "name": "visit_AsyncFunctionDef",
+          "loc": 2
+        },
+        {
+          "name": "visit_Import",
+          "loc": 4
+        },
+        {
+          "name": "visit_ImportFrom",
+          "loc": 4
+        },
+        {
+          "name": "visit_For",
+          "loc": 2
+        },
+        {
+          "name": "visit_While",
+          "loc": 2
+        },
+        {
+          "name": "visit_If",
+          "loc": 2
+        },
+        {
+          "name": "visit_Try",
+          "loc": 2
+        },
+        {
+          "name": "visit_With",
+          "loc": 2
+        },
+        {
+          "name": "_track_nesting",
+          "loc": 6
+        },
+        {
+          "name": "analyze_python_file",
+          "loc": 122
+        }
+      ],
+      "classes": [
+        {
+          "name": "CallCollector",
+          "methods": 2
+        },
+        {
+          "name": "Visitor",
+          "methods": 12
+        }
+      ],
+      "imports": [
+        "json",
+        "ast"
+      ],
+      "radar": [
+        1.35,
+        3.0,
+        2,
+        0.6666666666666666,
+        4.5
+      ]
+    },
+    {
+      "path": "analyzer\\core.py",
+      "loc": 131,
+      "lang": "Python",
+      "risk": "High",
+      "score": 4,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "is_ignored",
+          "loc": 5
+        },
+        {
+          "name": "analyze_directory",
+          "loc": 77
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "re",
+        "hashlib",
+        "os",
+        "pathlib"
+      ],
+      "radar": [
+        1.31,
+        0.4,
+        7,
+        1.3333333333333333,
+        6.0
+      ]
+    },
+    {
+      "path": "analyzer\\radar.py",
+      "loc": 123,
+      "lang": "Python",
+      "risk": "Medium",
+      "score": 3,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "generate_radar_chart",
+          "loc": 118
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "webbrowser",
+        "tempfile",
+        "json",
+        "os"
+      ],
+      "radar": [
+        1.23,
+        0.2,
+        2,
+        1.3333333333333333,
+        4.5
+      ]
+    },
+    {
+      "path": "frontend\\src\\App.tsx",
+      "loc": 114,
+      "lang": "React TypeScript",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "App",
+          "loc": 0
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "react",
+        "./components/Sidebar",
+        "lucide-react",
+        "./components/Dashboard"
+      ],
+      "radar": [
+        1.14,
+        0.2,
+        0,
+        1.3333333333333333,
+        0.0
+      ]
+    },
+    {
+      "path": "analyzer\\mermaid_generator.py",
+      "loc": 108,
+      "lang": "Python",
+      "risk": "High",
+      "score": 5,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "generate_mermaid_diagrams",
+          "loc": 106
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "os"
+      ],
+      "radar": [
+        1.08,
+        0.2,
+        4,
+        0.3333333333333333,
+        7.5
+      ]
+    },
+    {
+      "path": "frontend\\src\\components\\RadarChart.tsx",
+      "loc": 103,
+      "lang": "React TypeScript",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [
+        "react-chartjs-2",
+        "react"
+      ],
+      "radar": [
+        1.03,
+        0.0,
+        0,
+        0.6666666666666666,
+        0.0
+      ]
+    },
+    {
+      "path": "analyzer\\hotspots.py",
+      "loc": 85,
+      "lang": "Python",
+      "risk": "High",
+      "score": 4,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "detect_hotspots",
+          "loc": 83
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "analyzer"
+      ],
+      "radar": [
+        0.85,
+        0.2,
+        5,
+        0.3333333333333333,
+        6.0
+      ]
+    },
+    {
+      "path": "analyzer\\cli.py",
+      "loc": 77,
+      "lang": "Python",
+      "risk": "Medium",
+      "score": 2,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "main",
+          "loc": 65
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "webbrowser",
+        "analyzer",
+        "sys",
+        "subprocess",
+        "rich",
+        "os",
+        "argparse",
+        "time"
+      ],
+      "radar": [
+        0.77,
+        0.2,
+        2,
+        2.6666666666666665,
+        3.0
+      ]
+    },
+    {
+      "path": "analyzer\\export.py",
+      "loc": 73,
+      "lang": "Python",
+      "risk": "Medium",
+      "score": 2,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "export_frontend_data",
+          "loc": 70
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "json",
+        "os"
+      ],
+      "radar": [
+        0.73,
+        0.2,
+        3,
+        0.6666666666666666,
+        3.0
+      ]
+    },
+    {
+      "path": "frontend\\README.md",
+      "loc": 73,
+      "lang": "Markdown",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.73,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "analyzer\\git_history.py",
+      "loc": 69,
+      "lang": "Python",
+      "risk": "High",
+      "score": 4,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "analyze_git_history",
+          "loc": 65
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "os",
+        "subprocess",
+        "collections"
+      ],
+      "radar": [
+        0.69,
+        0.2,
+        8,
+        1.0,
+        6.0
+      ]
+    },
+    {
+      "path": "analyzer\\ts_extractor.py",
+      "loc": 57,
+      "lang": "Python",
+      "risk": "High",
+      "score": 4,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "extract_ts_structure",
+          "loc": 55
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "re"
+      ],
+      "radar": [
+        0.57,
+        0.2,
+        4,
+        0.3333333333333333,
+        6.0
+      ]
+    },
+    {
+      "path": "analyzer\\git_utils.py",
+      "loc": 52,
+      "lang": "Python",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [
+        {
+          "name": "parse_github_url",
+          "loc": 15
+        },
+        {
+          "name": "cleanup",
+          "loc": 6
+        },
+        {
+          "name": "clone_repo",
+          "loc": 29
+        }
+      ],
+      "classes": [],
+      "imports": [
+        "re",
+        "subprocess",
+        "atexit",
+        "shutil",
+        "os",
+        "tempfile"
+      ],
+      "radar": [
+        0.52,
+        0.6,
+        2,
+        2.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\package.json",
+      "loc": 34,
+      "lang": "JSON",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.34,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\tsconfig.app.json",
+      "loc": 28,
+      "lang": "JSON",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.28,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\tsconfig.node.json",
+      "loc": 26,
+      "lang": "JSON",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.26,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\.gitignore",
+      "loc": 24,
+      "lang": "Other",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.24,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\public\\icons.svg",
+      "loc": 24,
+      "lang": "Other",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.24,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\eslint.config.js",
+      "loc": 23,
+      "lang": "JavaScript",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [
+        "typescript-eslint",
+        "eslint-plugin-react-hooks",
+        "globals",
+        "eslint/config",
+        "eslint-plugin-react-refresh",
+        "@eslint/js"
+      ],
+      "radar": [
+        0.23,
+        0.0,
+        0,
+        2.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\index.html",
+      "loc": 13,
+      "lang": "HTML",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.13,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\src\\main.tsx",
+      "loc": 10,
+      "lang": "React TypeScript",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [
+        "react",
+        "react-dom/client",
+        "./App.tsx"
+      ],
+      "radar": [
+        0.1,
+        0.0,
+        0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "path": "main.py",
+      "loc": 9,
+      "lang": "Python",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [
+        "analyzer",
+        "sys"
+      ],
+      "radar": [
+        0.09,
+        0.0,
+        2,
+        0.6666666666666666,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\tsconfig.json",
+      "loc": 7,
+      "lang": "JSON",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.07,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\vite.config.ts",
+      "loc": 7,
+      "lang": "TypeScript",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [
+        "@vitejs/plugin-react",
+        "vite"
+      ],
+      "radar": [
+        0.07,
+        0.0,
+        0,
+        0.6666666666666666,
+        0.0
+      ]
+    },
+    {
+      "path": "analyzer\\__init__.py",
+      "loc": 3,
+      "lang": "Python",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.03,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": ".gitignore",
+      "loc": 2,
+      "lang": "Other",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.02,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\public\\favicon.svg",
+      "loc": 1,
+      "lang": "Other",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.01,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\src\\assets\\react.svg",
+      "loc": 1,
+      "lang": "Other",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.01,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "path": "frontend\\src\\assets\\vite.svg",
+      "loc": 1,
+      "lang": "Other",
+      "risk": "Low",
+      "score": 0,
+      "is_dup": false,
+      "is_gen": false,
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "radar": [
+        0.01,
+        0.0,
+        0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "stats": {
+    "total_files": 38,
+    "total_loc": 4998,
+    "languages": {},
+    "hotspots_count": 13
+  }
+}
