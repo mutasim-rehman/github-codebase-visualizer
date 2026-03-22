@@ -14,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description="Analyze a codebase and output complexity metrics, languages, and dependencies.")
     parser.add_argument("path", help="Local directory path or GitHub URL to analyze")
     parser.add_argument("--depth", type=int, default=1, help="Depth for GitHub shallow clone (default 1)")
-    parser.add_argument("--radar", action="store_true", help="Generate and open an interactive HTML Radar Chart of file complexity")
+    parser.add_argument("--dashboard", action="store_true", help="Generate and launch an interactive HTML Risk Dashboard in your browser")
     parser.add_argument("--minimap", action="store_true", help="Print a detailed File-to-Function Mini-Map for top risky files")
     parser.add_argument("--diagram", action="store_true", help="Generate a Mermaid architecture diagram file")
     
@@ -43,14 +43,11 @@ def main():
         
     print_summary(stats, hotspots)
     
-    if args.radar:
-        from analyzer.radar import generate_radar_chart
-        with console.status("[bold green]Generating Interactive Radar Chart...[/bold green]"):
-            path = generate_radar_chart(hotspots)
-            if path:
-                console.print(f"\n🚀 [bold magenta]Complexity Radar Chart launched in browser![/bold magenta] [dim]({path})[/dim]")
-            else:
-                console.print("\n[yellow]Not enough data to generate radar chart![/yellow]")
+    if args.dashboard:
+        from analyzer.dashboard import generate_dashboard
+        with console.status("[bold green]Generating Interactive Risk Dashboard...[/bold green]"):
+            path = generate_dashboard(stats, hotspots)
+            console.print(f"\n🚀 [bold magenta]Risk Dashboard launched in browser![/bold magenta] [dim]({path})[/dim]")
                 
     if args.minimap:
         from analyzer.output import print_minimap
