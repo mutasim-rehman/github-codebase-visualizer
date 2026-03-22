@@ -47,16 +47,23 @@ def detect_hotspots(files_list):
                 f["imports"] = deps
                 f["classes"] = ast_metrics["classes"]
                 f["functions"] = ast_metrics["functions"]
+                
+        f["score"] = score
+        if score >= 4:
+            f["risk_level"] = "High"
+        elif score >= 2:
+            f["risk_level"] = "Medium"
+        else:
+            f["risk_level"] = "Low"
                     
         # Consider it a hotspot if score >= 2
         if score >= 2:
-            risk_level = "High" if score >= 4 else "Medium"
             hotspots.append({
                 "path": f["path"],
                 "score": score,
                 "reasons": reasons,
                 "loc": f["loc"],
-                "risk_level": risk_level
+                "risk_level": f["risk_level"]
             })
             
     # Sort by score descending, then loc

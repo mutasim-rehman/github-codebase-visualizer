@@ -67,21 +67,22 @@ def print_tree(all_files):
         loc = file_info.get("loc", 0)
         is_generated = file_info.get("is_generated", False)
         is_duplicate = file_info.get("is_duplicate", False)
+        risk_level = file_info.get("risk_level", "Low")
         
         badge = f" [{loc} LOC]"
         
         if is_duplicate:
-            style = "yellow"
+            style = "bright_yellow"
             icon = "⚠ "
         elif is_generated:
             style = "dim"
             icon = "⚙ "
-        elif loc > 1000:
+        elif risk_level == "High":
             style = "bold red"
-            icon = "🔴 "
-        elif loc > 500:
-            style = "bold yellow"
-            icon = "🟡 "
+            icon = "🔥 "
+        elif risk_level == "Medium":
+            style = "orange1"
+            icon = "⚡ "
         else:
             style = "green"
             icon = "🟢 "
@@ -106,9 +107,9 @@ def print_tree(all_files):
     
     console.print("")
     console.print(Panel(
-        "[green]🟢 Normal[/green]  [yellow]🟡 >500 LOC[/yellow]  [red]🔴 >1000 LOC[/red]  [yellow]⚠  Duplicate[/yellow]  [dim]⚙  Generated[/dim]",
-        title="File Tree",
-        subtitle="Color Legend"
+        "[green]🟢 Normal[/green]  [orange1]⚡ Medium Risk[/orange1]  [red]🔥 High Risk[/red]  [bright_yellow]⚠  Duplicate[/bright_yellow]  [dim]⚙  Generated[/dim]",
+        title="Hotspot Heatmap",
+        subtitle="Risk Intensity"
     ))
     console.print(root)
     console.print("")
