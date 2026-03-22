@@ -1,11 +1,14 @@
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from rich.tree import Tree
+from rich.text import Text
 
 console = Console()
 
 def print_summary(stats, hotspots):
     print_basic_stats(stats)
+    print_tree(stats["all_files"])
     print_language_stats(stats["lang_stats"])
     print_top_files(stats["top_files"])
     print_duplicates(stats.get("duplicates", []))
@@ -35,6 +38,81 @@ def print_language_stats(lang_stats):
         
     console.print(table)
     
+def print_tree(all_files):
+    """Renders a color-coded hierarchical directory tree."""
+    # Build a set of duplicate paths for fast lookup
+    dup_paths = set()
+    # We need the duplicates list; reconstruct from all_files if needed
+    # (It's already embedded as a flag inside file dicts if added)
+    # We'll rely on duplicate_of key injected into files during traversal. 
+    # For now, detect by checking if file was seen twice - we'll use a simpler approach:
+    # build from stats duplicates list instead, which is passed via all_files side-channel
+    # Actually we only have all_files here. Let's mark duplicate paths via a separate set.
+    # We embed is_duplicate on the file dict in core.py, handled below.
+    
+    # Build nested dict representing the tree structure
+    tree_data = {}
+    for f in all_files:
+        parts = f["path"].replace("\\", "/").split("/")
+        node = tree_data
+        for part in parts:
+            node = node.setdefault(part, {})
+        node["__file__"] = f
+
+    def _get_label(name, file_info=None):
+        if file_info is None:
+            # Directory
+            return Text(f"📁 {name}/", style="bold blue")
+        
+        loc = file_info.get("loc", 0)
+        is_generated = file_info.get("is_generated", False)
+        is_duplicate = file_info.get("is_duplicate", False)
+        
+        badge = f" [{loc} LOC]"
+        
+        if is_duplicate:
+            style = "yellow"
+            icon = "⚠ "
+        elif is_generated:
+            style = "dim"
+            icon = "⚙ "
+        elif loc > 1000:
+            style = "bold red"
+            icon = "🔴 "
+        elif loc > 500:
+            style = "bold yellow"
+            icon = "🟡 "
+        else:
+            style = "green"
+            icon = "🟢 "
+        
+        return Text(f"{icon}{name}{badge}", style=style)
+
+    def _build_rich_tree(node, rich_node):
+        for key, value in sorted(node.items()):
+            if key == "__file__":
+                continue
+            file_info = value.get("__file__")
+            if file_info is not None and len(value) == 1:
+                # It's a leaf file
+                rich_node.add(_get_label(key, file_info))
+            else:
+                # It's a directory
+                branch = rich_node.add(_get_label(key))
+                _build_rich_tree(value, branch)
+    
+    root = Tree(Text("📦 Project Root", style="bold white"))
+    _build_rich_tree(tree_data, root)
+    
+    console.print("")
+    console.print(Panel(
+        "[green]🟢 Normal[/green]  [yellow]🟡 >500 LOC[/yellow]  [red]🔴 >1000 LOC[/red]  [yellow]⚠  Duplicate[/yellow]  [dim]⚙  Generated[/dim]",
+        title="File Tree",
+        subtitle="Color Legend"
+    ))
+    console.print(root)
+    console.print("")
+
 def print_top_files(top_files):
     table = Table(title="Top 5 Largest Files")
     table.add_column("File", style="cyan")

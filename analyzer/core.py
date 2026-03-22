@@ -80,7 +80,9 @@ def analyze_directory(root_path: str):
                 continue # Skip binary files
                 
             # Identical duplicate detection
+            is_duplicate = False
             if f_hash in file_hashes:
+                is_duplicate = True
                 duplicates.append({"path": str(path.relative_to(root)), "duplicate_of": file_hashes[f_hash]})
             else:
                 # Require at least 5 lines to be considered a meaningful duplicate
@@ -101,7 +103,7 @@ def analyze_directory(root_path: str):
             if not is_generated:
                 lang_stats[lang]["loc"] += loc
             
-            file_list.append({"path": str(path.relative_to(root)), "loc": loc, "lang": lang, "full_path": str(path), "is_generated": is_generated})
+            file_list.append({"path": str(path.relative_to(root)), "loc": loc, "lang": lang, "full_path": str(path), "is_generated": is_generated, "is_duplicate": is_duplicate})
             
     # Top 5 largest files
     file_list.sort(key=lambda x: x["loc"], reverse=True)
