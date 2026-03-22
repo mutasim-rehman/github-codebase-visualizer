@@ -21,6 +21,7 @@ def analyze_python_file(filepath: str):
             self.functions = 0
             self.longest_func = {"name": None, "loc": 0}
             self.imports = set()
+            self.problematic_functions = []
             
         def visit_ClassDef(self, node):
             self.classes += 1
@@ -32,7 +33,24 @@ def analyze_python_file(filepath: str):
             loc = node.end_lineno - node.lineno + 1 if hasattr(node, "end_lineno") and node.end_lineno else 0
             if loc > self.longest_func["loc"]:
                 self.longest_func = {"name": node.name, "loc": loc}
+                
+            old_current = self.current_nesting
+            old_max = self.max_nesting
+            self.current_nesting = 0
+            self.max_nesting = 0
+            
             self.generic_visit(node)
+            
+            func_max = self.max_nesting
+            if loc > 50 or func_max > 3:
+                self.problematic_functions.append({
+                    "name": node.name,
+                    "loc": loc,
+                    "nesting": func_max
+                })
+                
+            self.current_nesting = old_current
+            self.max_nesting = max(old_max, func_max)
             
         def visit_AsyncFunctionDef(self, node):
             self.visit_FunctionDef(node)
@@ -73,5 +91,6 @@ def analyze_python_file(filepath: str):
         "functions": visitor.functions,
         "max_nesting": visitor.max_nesting,
         "longest_function": visitor.longest_func,
-        "imports": list(visitor.imports)
+        "imports": list(visitor.imports),
+        "problematic_functions": visitor.problematic_functions
     }

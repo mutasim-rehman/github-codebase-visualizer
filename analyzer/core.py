@@ -1,11 +1,14 @@
 import os
+import hashlib
 from pathlib import Path
 
 # Common ignore directories
 IGNORE_DIRS = {".git", "node_modules", ".next", "venv", "__pycache__", ".venv", "env", ".idea", ".vscode", "dist", "build"}
 
 # Common ignore extensions
-IGNORE_EXTS = {".csv", ".txt"}
+IGNORE_EXTS = {".csv", ".txt", ".map"}
+
+IGNORE_FILES = {"package-lock.json", "yarn.lock", "pnpm-lock.yaml"}
 
 # Basic extension mapping
 LANG_MAP = {
@@ -50,33 +53,55 @@ def analyze_directory(root_path: str):
     root = Path(root_path)
     total_files = 0
     total_loc = 0
+    generated_loc = 0
     lang_stats = {}
     file_list = []
+    file_hashes = {}
+    duplicates = []
 
     for path in root.rglob("*"):
         if path.is_file() and not is_ignored(path):
             ext = path.suffix.lower()
-            if ext in IGNORE_EXTS:
+            if ext in IGNORE_EXTS or ext == ".ipynb":
                 continue
                 
             total_files += 1
             lang = LANG_MAP.get(ext, "Other")
             
+            is_generated = path.name in IGNORE_FILES or path.name.endswith(".min.js") or path.name.endswith(".min.css") or (ext == ".json" and path.stat().st_size > 500 * 1024)
+            
             try:
                 with open(path, "r", encoding="utf-8") as f:
-                    lines = f.readlines()
+                    content = f.read()
+                    lines = content.splitlines()
                     loc = len(lines)
+                    f_hash = hashlib.md5(content.encode('utf-8')).hexdigest()
             except UnicodeDecodeError:
                 continue # Skip binary files
                 
-            total_loc += loc
+            # Identical duplicate detection
+            if f_hash in file_hashes:
+                duplicates.append({"path": str(path.relative_to(root)), "duplicate_of": file_hashes[f_hash]})
+            else:
+                # Require at least 5 lines to be considered a meaningful duplicate
+                if loc > 5 and not is_generated:
+                    file_hashes[f_hash] = str(path.relative_to(root))
+                    
+            if loc > 10000:
+                is_generated = True
+                
+            if is_generated:
+                generated_loc += loc
+            else:
+                total_loc += loc
             
             if lang not in lang_stats:
                 lang_stats[lang] = {"files": 0, "loc": 0}
             lang_stats[lang]["files"] += 1
-            lang_stats[lang]["loc"] += loc
+            if not is_generated:
+                lang_stats[lang]["loc"] += loc
             
-            file_list.append({"path": str(path.relative_to(root)), "loc": loc, "lang": lang, "full_path": str(path)})
+            file_list.append({"path": str(path.relative_to(root)), "loc": loc, "lang": lang, "full_path": str(path), "is_generated": is_generated})
             
     # Top 5 largest files
     file_list.sort(key=lambda x: x["loc"], reverse=True)
@@ -85,7 +110,9 @@ def analyze_directory(root_path: str):
     return {
         "total_files": total_files,
         "total_loc": total_loc,
+        "generated_loc": generated_loc,
         "lang_stats": lang_stats,
         "top_files": top_files,
-        "all_files": file_list
+        "all_files": file_list,
+        "duplicates": duplicates
     }

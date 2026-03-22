@@ -25,7 +25,7 @@ def detect_hotspots(files_list):
             f["ast_metrics"] = ast_metrics  # Attach for reporting
             
             if ast_metrics:
-                if ast_metrics["max_nesting"] > 4:
+                if ast_metrics["max_nesting"] > 3:
                     score += 2
                     reasons.append(f"Deep nesting (depth {ast_metrics['max_nesting']})")
                 
@@ -34,17 +34,29 @@ def detect_hotspots(files_list):
                     score += 1
                     reasons.append(f"Long function '{lf['name']}' ({lf['loc']} lines)")
                     
-                f["imports"] = ast_metrics["imports"]
+                pf = ast_metrics.get("problematic_functions", [])
+                score += len(pf) * 2
+                for p in pf:
+                    reasons.append(f"Problematic func '{p['name']}' (LOC: {p['loc']}, Nesting: {p['nesting']})")
+                    
+                deps = ast_metrics.get("imports", [])
+                if len(deps) > 15:
+                    score += 1
+                    reasons.append(f"High coupling ({len(deps)} imports)")
+                    
+                f["imports"] = deps
                 f["classes"] = ast_metrics["classes"]
                 f["functions"] = ast_metrics["functions"]
                     
         # Consider it a hotspot if score >= 2
         if score >= 2:
+            risk_level = "High" if score >= 4 else "Medium"
             hotspots.append({
                 "path": f["path"],
                 "score": score,
                 "reasons": reasons,
-                "loc": f["loc"]
+                "loc": f["loc"],
+                "risk_level": risk_level
             })
             
     # Sort by score descending, then loc

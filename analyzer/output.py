@@ -8,12 +8,18 @@ def print_summary(stats, hotspots):
     print_basic_stats(stats)
     print_language_stats(stats["lang_stats"])
     print_top_files(stats["top_files"])
-    print_python_stats(stats["all_files"])
+    print_duplicates(stats.get("duplicates", []))
+    print_priority_fixes(hotspots)
     print_hotspots(hotspots)
     
 def print_basic_stats(stats):
     console.print("\n")
-    console.print(Panel(f"[bold green]Total Files:[/bold green] {stats['total_files']} | [bold green]Total LOC:[/bold green] {stats['total_loc']}", title="Codebase Summary"))
+    summary_text = (
+        f"[bold green]Total Files:[/bold green] {stats['total_files']} | "
+        f"[bold green]App LOC:[/bold green] {stats['total_loc']} | "
+        f"[dim]Generated/Vendor LOC: {stats.get('generated_loc', 0)}[/dim]"
+    )
+    console.print(Panel(summary_text, title="Codebase Summary"))
 
 def print_language_stats(lang_stats):
     table = Table(title="Language Distribution")
@@ -62,18 +68,49 @@ def print_python_stats(all_files):
         
     console.print(table)
 
-def print_hotspots(hotspots):
-    if not hotspots:
-        console.print("\n[bold green]No hotspots detected![/bold green] 🎉\n")
+def print_duplicates(duplicates):
+    if not duplicates:
+        return
+    table = Table(title="Duplicate Files Detection")
+    table.add_column("Duplicate Path", style="yellow")
+    table.add_column("Original Path", style="cyan")
+    
+    for d in duplicates[:10]:
+        table.add_row(d["path"], d["duplicate_of"])
+        
+    console.print(table)
+
+def print_priority_fixes(hotspots):
+    # Filter only High Risk items
+    priority = [h for h in hotspots if h.get("risk_level") == "High"]
+    if not priority:
+        console.print("\n[bold green]No Priority Fixes needed![/bold green] 🎉\n")
         return
         
-    table = Table(title="🔥 Code Hotspots (High Complexity/Size)")
+    table = Table(title="🚨 Priority Fixes (Actionable Insights)")
+    table.add_column("File", style="cyan")
+    table.add_column("Risk", style="red bold")
+    table.add_column("Action Items", style="yellow")
+    
+    for p in priority[:5]:
+        table.add_row(p['path'], p['risk_level'], "\n".join(p['reasons']))
+        
+    console.print(table)
+    console.print("\n")
+
+def print_hotspots(hotspots):
+    # Show medium risk hotspots since high risk are handled by priority
+    medium = [h for h in hotspots if h.get("risk_level", "Medium") == "Medium"]
+    if not medium:
+        return
+        
+    table = Table(title="🔥 Code Hotspots (Medium Risk)")
     table.add_column("File", style="cyan")
     table.add_column("Issues", style="red")
     table.add_column("LOC", justify="right", style="green")
     
-    # Show top 10 hotspots max
-    for h in hotspots[:10]:
+    # Show top 5 medium hotspots max
+    for h in medium[:5]:
         table.add_row(h['path'], "\n".join(h['reasons']), str(h['loc']))
         
     console.print(table)
