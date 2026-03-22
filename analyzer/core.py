@@ -2,15 +2,22 @@ import os
 from pathlib import Path
 
 # Common ignore directories
-IGNORE_DIRS = {".git", "node_modules", "venv", "__pycache__", ".venv", "env", ".idea", ".vscode", "dist", "build"}
+IGNORE_DIRS = {".git", "node_modules", ".next", "venv", "__pycache__", ".venv", "env", ".idea", ".vscode", "dist", "build"}
+
+# Common ignore extensions
+IGNORE_EXTS = {".csv", ".txt"}
 
 # Basic extension mapping
 LANG_MAP = {
     ".py": "Python",
     ".js": "JavaScript",
+    ".jsx": "React",
     ".ts": "TypeScript",
+    ".tsx": "React TypeScript",
     ".html": "HTML",
     ".css": "CSS",
+    ".scss": "SCSS",
+    ".sass": "SASS",
     ".java": "Java",
     ".cpp": "C++",
     ".c": "C",
@@ -26,7 +33,11 @@ LANG_MAP = {
     ".json": "JSON",
     ".yml": "YAML",
     ".yaml": "YAML",
-    ".xml": "XML"
+    ".xml": "XML",
+    ".ipynb": "Jupyter Notebook",
+    ".sql": "SQL",
+    ".vue": "Vue",
+    ".svelte": "Svelte"
 }
 
 def is_ignored(path: Path) -> bool:
@@ -44,8 +55,11 @@ def analyze_directory(root_path: str):
 
     for path in root.rglob("*"):
         if path.is_file() and not is_ignored(path):
-            total_files += 1
             ext = path.suffix.lower()
+            if ext in IGNORE_EXTS:
+                continue
+                
+            total_files += 1
             lang = LANG_MAP.get(ext, "Other")
             
             try:
