@@ -29,17 +29,19 @@ export default function App() {
   const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
   const [mainView, setMainView] = useState<MainView>('overview');
 
-  const analyze = async (url: string) => {
+  const analyze = async (input: string, mode: 'github' | 'local') => {
     setScreen('loading');
-    setLoadingUrl(url);
+    setLoadingUrl(input);
     setSelectedFile(null);
     setMainView('overview');
+
+    const body = mode === 'github' ? { url: input } : { path: input };
 
     try {
       const res = await fetch(`${API_BASE}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify(body),
       });
 
       const json = await res.json();
@@ -50,7 +52,7 @@ export default function App() {
         return;
       }
 
-      setDash({ url, data: json as AppData });
+      setDash({ url: input, data: json as AppData });
       setScreen('dashboard');
     } catch (e: unknown) {
       setErrorMsg(
@@ -92,7 +94,10 @@ export default function App() {
   if (!dash) return null;
 
   const { url, data } = dash;
-  const repoName = url.replace('https://github.com/', '').split('/').slice(0, 2).join('/');
+  const isLocal = !url.startsWith('http');
+  const displayName = isLocal
+    ? url.replace(/\\/g, '/').split('/').filter(Boolean).slice(-2).join('/')
+    : url.replace('https://github.com/', '').split('/').slice(0, 2).join('/');
 
   // Decide what to show in main content
   const showFileDash = !!selectedFile;
@@ -129,8 +134,10 @@ export default function App() {
         </nav>
 
         <div className="topbar-url">
-          <span style={{ color: 'var(--text-muted)', marginRight: 6 }}>analyzing</span>
-          {repoName}
+          <span style={{ color: 'var(--text-muted)', marginRight: 6 }}>
+            {isLocal ? '📁' : 'analyzing'}
+          </span>
+          {displayName}
         </div>
         <button className="topbar-new-btn" onClick={reset} id="new-analysis-btn">
           <RefreshCw size={13} /> New Analysis

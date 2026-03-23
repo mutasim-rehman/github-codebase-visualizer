@@ -421,20 +421,34 @@ def build_hotspot_radar(hotspots, all_files):
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
+    import pathlib
     body = request.get_json(silent=True)
-    if not body or "url" not in body:
-        return jsonify({"error": "Missing 'url' in request body."}), 400
+    if not body:
+        return jsonify({"error": "Missing request body."}), 400
 
-    url = body["url"].strip()
+    url = body.get("url", "").strip()
+    local_path = body.get("path", "").strip()
     depth = int(body.get("depth", 1))
 
-    if not (url.startswith("http://") or url.startswith("https://")):
-        return jsonify({"error": "Only remote GitHub URLs are supported via this endpoint."}), 400
+    if not url and not local_path:
+        return jsonify({"error": "Provide either a GitHub 'url' or a local 'path'."}), 400
 
-    try:
-        target_path = clone_repo(url, depth)
-    except Exception as e:
-        return jsonify({"error": f"Failed to clone repository: {str(e)}"}), 500
+    if local_path:
+        # ── Local path analysis ──────────────────────────────────────────
+        p = pathlib.Path(local_path)
+        if not p.exists():
+            return jsonify({"error": f"Path does not exist: {local_path}"}), 400
+        if not p.is_dir():
+            return jsonify({"error": f"Path is not a directory: {local_path}"}), 400
+        target_path = str(p.resolve())
+    else:
+        # ── Remote GitHub analysis ───────────────────────────────────────
+        if not (url.startswith("http://") or url.startswith("https://")):
+            return jsonify({"error": "Only remote GitHub URLs are supported via this endpoint."}), 400
+        try:
+            target_path = clone_repo(url, depth)
+        except Exception as e:
+            return jsonify({"error": f"Failed to clone repository: {str(e)}"}), 500
 
     try:
         stats = analyze_directory(target_path)
