@@ -20,7 +20,27 @@ export interface AppStats {
   duplicates_count: number;
 }
 
+export interface Diagrams {
+  dependency: string;
+  class_diagram: string;
+  call_graph: string;
+  render_tree: string;
+}
+
+export interface HotspotRadarDataset {
+  label: string;
+  data: number[];
+  backgroundColor: string;
+  borderColor: string;
+}
+
+export interface HotspotRadar {
+  datasets: HotspotRadarDataset[];
+}
+
 export interface AppData {
   files: FileNode[];
   stats: AppStats;
+  diagrams: Diagrams;
+  hotspot_radar: HotspotRadar;
 }

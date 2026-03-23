@@ -345,6 +345,43 @@ body {
   border-color: var(--border-active);
 }
 
+/* Top-bar nav tabs */
+.topbar-nav {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+}
+
+.topbar-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 5px 14px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.topbar-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.topbar-tab.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
 .app-body {
   display: flex;
   flex: 1;
