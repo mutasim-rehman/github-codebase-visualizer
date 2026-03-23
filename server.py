@@ -85,112 +85,283 @@ def build_export_payload(stats, hotspots):
 
 
 def build_diagrams(all_files):
-    """Generate Mermaid diagram strings in memory (no file write)."""
+    """Generate Mermaid diagram strings in memory (no file write) with top-down layouts, subgraphs, and size limits."""
+    MAX_NODES = 30
+    DEPTH_LIMIT = 2
+
+    def get_folder(path_str):
+        path_str = path_str.replace("\\", "/")
+        parts = path_str.split("/")
+        if len(parts) > 1:
+            return parts[0]
+        return "root"
+
+    def is_utility(folder_name):
+        return folder_name.lower() in ["utils", "util", "helpers", "shared", "tests", "test", "common", "lib"]
 
     # --- 1. Module Dependency Graph ---
-    dep_lines = ["graph TD"]
-    node_map = {f["path"]: f"F{i}" for i, f in enumerate(all_files)}
+    def file_score(f):
+        return f.get("loc", 0) + len(f.get("imports", [])) * 10
+
+    sorted_files = sorted(all_files, key=file_score, reverse=True)
+    top_files = sorted_files[:MAX_NODES]
+
+    dep_lines = ["graph TB"]
+    folders = {}
+    node_map = {}
+    placeholder_nodes = set()
+
+    for i, f in enumerate(top_files):
+        folder = get_folder(f["path"])
+        fid = f"F{i}"
+        
+        if is_utility(folder):
+            fid = f"GRP_DEP_{folder}"
+            node_map[f["path"]] = fid
+            if fid not in placeholder_nodes:
+                placeholder_nodes.add(fid)
+                folders.setdefault("Utilities", []).append((fid, f"{folder}/*"))
+        else:
+            node_map[f["path"]] = fid
+            folders.setdefault(folder, []).append((fid, os.path.basename(f["path"]).replace('"', "'")))
+
+    for folder, nodes in folders.items():
+        if len(nodes) == 1 and folder == "root":
+            dep_lines.append(f'    {nodes[0][0]}["{nodes[0][1]}"]')
+        else:
+            dep_lines.append(f'    subgraph {folder}')
+            for fid, name in nodes:
+                dep_lines.append(f'        {fid}["{name}"]')
+            dep_lines.append('    end')
+
     added_edges = set()
-
-    for f in all_files:
+    MAX_DEP_EDGES = 80
+    for f in top_files:
+        if len(added_edges) >= MAX_DEP_EDGES:
+            break
         fid = node_map[f["path"]]
-        name = os.path.basename(f["path"]).replace('"', "'")
-        dep_lines.append(f'    {fid}["{name}"]')
-
-    for f in all_files:
-        fid = node_map[f["path"]]
-        for imp in f.get("imports", [])[:8]:
+        for imp in f.get("imports", [])[:6]:
             for path, nid in node_map.items():
                 if isinstance(imp, str) and imp in path and nid != fid:
                     edge = (fid, nid)
-                    if edge not in added_edges:
+                    if edge not in added_edges and len(added_edges) < MAX_DEP_EDGES:
                         added_edges.add(edge)
                         dep_lines.append(f"    {fid} --> {nid}")
                     break
 
+    if len(all_files) > MAX_NODES:
+        dep_lines.append(f"    truncNote[\"⚠ Showing Top {MAX_NODES} modules\"]")
+
+
     # --- 2. Class / Interface Diagram ---
     class_lines = ["classDiagram"]
     seen_classes = set()
+    class_folders = {}
+    
+    class_list = []
+    class_file_map = {}
     for f in all_files:
+        folder = get_folder(f["path"])
         if "ast_metrics" in f and f["ast_metrics"] and "structure" in f["ast_metrics"]:
-            struct = f["ast_metrics"]["structure"]
-            for cls in struct.get("classes", []):
-                cname = cls["name"].replace(" ", "_")
-                if cname in seen_classes:
-                    continue
-                seen_classes.add(cname)
-                class_lines.append(f"    class {cname} {{")
-                for m in cls.get("methods", [])[:8]:
-                    mname = m["name"].replace(" ", "_")
-                    class_lines.append(f"        +{mname}()")
-                class_lines.append("    }")
-                for base in cls.get("bases", []):
-                    bname = base.replace(" ", "_")
-                    class_lines.append(f"    {bname} <|-- {cname}")
+            classes_list = f["ast_metrics"]["structure"].get("classes", [])
+        elif "ts_metrics" in f and f["ts_metrics"]:
+            classes_list = f["ts_metrics"].get("classes", [])
+        else:
+            classes_list = []
+            
+        for cls in classes_list:
+            class_list.append(cls)
+            class_file_map[cls["name"]] = folder
 
-        if "ts_metrics" in f and f["ts_metrics"]:
-            struct = f["ts_metrics"]
-            for cls in struct.get("classes", []):
-                cname = cls["name"].replace(" ", "_")
-                if cname in seen_classes:
-                    continue
-                seen_classes.add(cname)
-                class_lines.append(f"    class {cname} {{")
-                class_lines.append("    }")
-                for base in cls.get("bases", []):
-                    bname = base.replace(" ", "_")
-                    class_lines.append(f"    {bname} <|-- {cname}")
-            for intf in struct.get("interfaces", []):
-                iname = intf["name"].replace(" ", "_")
-                if iname in seen_classes:
-                    continue
-                seen_classes.add(iname)
-                class_lines.append(f"    class {iname} {{")
-                class_lines.append("        <<interface>>")
-                class_lines.append("    }")
+    class_list = sorted(class_list, key=lambda c: len(c.get("methods", [])), reverse=True)[:MAX_NODES]
+    
+    for cls in class_list:
+        cname = cls["name"].replace(" ", "_").replace(".", "_")
+        if cname in seen_classes:
+            continue
+        seen_classes.add(cname)
+        folder = class_file_map.get(cls["name"], "root")
+        class_folders.setdefault(folder, []).append(cls)
+        
+    for folder, classes in class_folders.items():
+        if folder != "root":
+            class_lines.append(f"    namespace {folder} {{")
+        for cls in classes:
+            cname = cls["name"].replace(" ", "_").replace(".", "_")
+            prefix = "        " if folder != "root" else "    "
+            class_lines.append(f"{prefix}class {cname} {{")
+            for m in cls.get("methods", [])[:5]:
+                mname = m["name"].replace(" ", "_").replace("<", "").replace(">", "")
+                class_lines.append(f"{prefix}    +{mname}()")
+            class_lines.append(f"{prefix}}}")
+        if folder != "root":
+            class_lines.append("    }")
+            
+    for cls in class_list:
+        cname = cls["name"].replace(" ", "_").replace(".", "_")
+        for base in cls.get("bases", []):
+            bname = base.replace(" ", "_").replace(".", "_")
+            if bname in seen_classes:
+                class_lines.append(f"    {bname} <|-- {cname}")
 
-    if len(class_lines) == 1:
+    if len(class_lines) <= 2:
         class_lines.append("    %% No classes or interfaces detected")
 
-    # --- 3. Function Call Graph ---
-    call_lines = ["graph TD"]
-    call_edges = set()
-    for f in all_files:
-        if "ast_metrics" in f and f["ast_metrics"] and "structure" in f["ast_metrics"]:
-            struct = f["ast_metrics"]["structure"]
-            for fn in struct.get("functions", []):
-                fname = fn["name"]
-                for call in fn.get("calls", [])[:6]:
-                    edge = (fname, call)
-                    if edge not in call_edges:
-                        call_edges.add(edge)
-                        call_lines.append(f"    {fname} --> {call}")
 
-        if "ts_metrics" in f and f["ts_metrics"]:
-            struct = f["ts_metrics"]
-            for fn in struct.get("functions", []):
-                fname = fn["name"]
-                for call in fn.get("calls", [])[:6]:
-                    edge = (fname, call)
-                    if edge not in call_edges:
-                        call_edges.add(edge)
-                        call_lines.append(f"    {fname} --> {call}")
+    # --- 3. Function Call Graph ---
+    func_map = {}
+    for f in all_files:
+        filepath = f["path"]
+        folder = get_folder(filepath)
+        
+        if "ast_metrics" in f and f["ast_metrics"] and "structure" in f["ast_metrics"]:
+            funcs_list = f["ast_metrics"]["structure"].get("functions", [])
+        elif "ts_metrics" in f and f["ts_metrics"]:
+            funcs_list = f["ts_metrics"].get("functions", [])
+        else:
+            funcs_list = []
+            
+        for fn in funcs_list:
+            name = fn["name"]
+            if name not in func_map:
+                func_map[name] = {
+                    "name": name,
+                    "loc": fn.get("loc", 0),
+                    "file": filepath,
+                    "folder": folder,
+                    "calls": fn.get("calls", [])
+                }
+                
+    sorted_funcs = sorted(func_map.values(), key=lambda x: x["loc"] + len(x["calls"])*10, reverse=True)
+    top_funcs = sorted_funcs[:MAX_NODES]
+
+    included_funcs = set()
+    call_edges = set()
+    
+    for start_fn in top_funcs:
+        queue = [(start_fn["name"], 0)]
+        while queue:
+            curr_name, depth = queue.pop(0)
+            if curr_name not in included_funcs:
+                included_funcs.add(curr_name)
+            if depth < DEPTH_LIMIT:
+                func_data = func_map.get(curr_name)
+                if func_data:
+                    for call_target in func_data["calls"][:5]:
+                        if call_target in func_map:
+                            call_edges.add((curr_name, call_target))
+                            if call_target not in included_funcs:
+                                queue.append((call_target, depth + 1))
+
+    call_folders = {}
+    collapsed_utils = set()
+    
+    for fn_name in included_funcs:
+        fdata = func_map.get(fn_name)
+        if fdata:
+            folder = fdata["folder"]
+            # To ensure compatibility with Mermaid nodes, strip special chars
+            safe_fn = fn_name.replace('"', '').replace(" ", "_").replace("<", "").replace(">", "")
+            if not safe_fn.strip():
+                continue
+
+            if is_utility(folder):
+                collapsed_utils.add(folder)
+            else:
+                call_folders.setdefault(folder, []).append((fn_name, safe_fn))
+
+    call_lines = ["graph TB"]
+    for folder in collapsed_utils:
+         call_lines.append(f'    GRP_CALL_{folder}["{folder}/* (Utils)"]')
+         
+    for folder, fn_tuples in call_folders.items():
+        if folder == "root":
+            for orig, safe in fn_tuples:
+                call_lines.append(f'    {safe}["{safe}()"]')
+        else:
+            call_lines.append(f'    subgraph {folder}')
+            for orig, safe in fn_tuples:
+                call_lines.append(f'        {safe}["{safe}()"]')
+            call_lines.append('    end')
+
+    MAX_CALL_EDGES_LIMIT = 150
+    final_edges = 0
+    for src, dst in call_edges:
+        if final_edges >= MAX_CALL_EDGES_LIMIT:
+            break
+        src_data = func_map.get(src)
+        dst_data = func_map.get(dst)
+        
+        src_safe = src.replace('"', '').replace(" ", "_").replace("<", "").replace(">", "")
+        dst_safe = dst.replace('"', '').replace(" ", "_").replace("<", "").replace(">", "")
+        if not src_safe.strip() or not dst_safe.strip():
+            continue
+
+        if src_data and is_utility(src_data["folder"]):
+            src_safe = f'GRP_CALL_{src_data["folder"]}'
+            
+        if dst_data and is_utility(dst_data["folder"]):
+            dst_safe = f'GRP_CALL_{dst_data["folder"]}'
+            
+        if src_safe != dst_safe:
+            # check if edges inside call lines already
+            edge_str = f'    {src_safe} --> {dst_safe}'
+            if edge_str not in call_lines:
+                call_lines.append(edge_str)
+                final_edges += 1
 
     if len(call_lines) == 1:
         call_lines.append("    %% No internal call data detected")
 
+
     # --- 4. React Render Tree ---
-    render_lines = ["graph TD"]
+    render_lines = ["graph TB"]
     render_edges = set()
+    MAX_RENDER_NODES = 30
+    
+    react_components = []
+    
     for f in all_files:
         if "ts_metrics" in f and f["ts_metrics"]:
             struct = f["ts_metrics"]
+            folder = get_folder(f["path"])
             for fn in struct.get("functions", []):
-                for render in fn.get("renders", []):
-                    edge = (fn["name"], render)
-                    if edge not in render_edges:
-                        render_edges.add(edge)
-                        render_lines.append(f'    {fn["name"]} --> {render}')
+                if fn.get("renders"):
+                    react_components.append({
+                        "name": fn["name"],
+                        "folder": folder,
+                        "renders": fn["renders"]
+                    })
+                    
+    react_components = sorted(react_components, key=lambda x: len(x["renders"]), reverse=True)[:MAX_RENDER_NODES]
+    comp_map = {rc["name"]: rc for rc in react_components}
+    
+    for rc in react_components:
+        for render in rc.get("renders", [])[:6]:
+            if render in comp_map:
+                render_edges.add((rc["name"], render))
+
+    ren_folders = {}
+    for rc in react_components:
+        safe_name = rc["name"].replace('"', "").replace("<", "").replace(">", "")
+        if safe_name.strip():
+            ren_folders.setdefault(rc["folder"], []).append(safe_name)
+        
+    for folder, comps in ren_folders.items():
+        if folder == "root":
+            for c in comps:
+                render_lines.append(f'    {c}["<{c} />"]')
+        else:
+            render_lines.append(f'    subgraph {folder}')
+            for c in comps:
+                render_lines.append(f'        {c}["<{c} />"]')
+            render_lines.append('    end')
+            
+    for src, dst in render_edges:
+        ss = src.replace('"', "").replace("<", "").replace(">", "")
+        ds = dst.replace('"', "").replace("<", "").replace(">", "")
+        if ss.strip() and ds.strip():
+            render_lines.append(f'    {ss} --> {ds}')
 
     if len(render_lines) == 1:
         render_lines.append("    %% No React component rendering detected")
@@ -201,6 +372,7 @@ def build_diagrams(all_files):
         "call_graph": "\n".join(call_lines),
         "render_tree": "\n".join(render_lines),
     }
+
 
 
 def build_hotspot_radar(hotspots, all_files):

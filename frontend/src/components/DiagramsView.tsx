@@ -276,14 +276,11 @@ function DiagramPanel({ tab, diagramSrc, radarData, radarOptions, hasHotspots }:
             {diagramSrc}
           </pre>
         ) : (
-          /* maxWidth keeps the graph column narrow so TD layout renders portrait */
-          <div style={{ maxWidth: 900, margin: '0 auto' }}>
-            <MermaidDiagram
-              key={`${tab}-${diagramSrc.length}`}
-              definition={diagramSrc}
-              id={`mermaid-${tab}`}
-            />
-          </div>
+          <MermaidDiagram
+            key={`${tab}-${diagramSrc.length}`}
+            definition={diagramSrc}
+            id={`mermaid-${tab}`}
+          />
         )}
       </div>
     </div>
