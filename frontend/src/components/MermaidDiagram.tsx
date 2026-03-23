@@ -18,7 +18,8 @@ mermaid.initialize({
     attributeBackgroundColorOdd: '#1e2330',
     attributeBackgroundColorEven: '#161b22',
   },
-  flowchart: { curve: 'basis', useMaxWidth: true },
+  // useMaxWidth: false lets us control portrait layout via CSS
+  flowchart: { curve: 'basis', useMaxWidth: false },
   securityLevel: 'loose',
 });
 
@@ -27,8 +28,17 @@ interface MermaidDiagramProps {
   id: string;
 }
 
+/** Force the mermaid SVG to be portrait: full-width, tall, scroll-y only */
+function portraitSvg(rawSvg: string): string {
+  // Remove any fixed width/height on <svg ...> and let CSS drive it
+  return rawSvg
+    .replace(/<svg([^>]*?)width="[^"]*"([^>]*?)>/g, '<svg$1$2>')
+    .replace(/<svg([^>]*?)height="[^"]*"([^>]*?)>/g, '<svg$1$2>')
+    .replace(/<svg([^>]*)>/g, '<svg$1 style="width:100%;height:auto;display:block;">');
+}
+
 export function MermaidDiagram({ definition, id }: MermaidDiagramProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [svg, setSvg] = useState<string>('');
 
@@ -37,33 +47,32 @@ export function MermaidDiagram({ definition, id }: MermaidDiagramProps) {
     setError(null);
     setSvg('');
 
-    // Limit very large graphs to avoid browser freeze
+    // Cap enormously large graphs for performance
     const lines = definition.split('\n');
     const nodeLines = lines.filter(l => /^\s+(F\d+)\[/.test(l));
     const edgeLines = lines.filter(l => /-->/.test(l));
 
     let def = definition;
-    // Cap at 120 nodes and 200 edges for performance
-    if (nodeLines.length > 120 || edgeLines.length > 200) {
-      const capped = [lines[0]]; // keep header like "graph TD"
+    if (nodeLines.length > 100 || edgeLines.length > 180) {
+      const capped = [lines[0]];
       let nodeCnt = 0;
       let edgeCnt = 0;
       for (const line of lines.slice(1)) {
         if (/^\s+(F\d+)\[/.test(line)) {
-          if (nodeCnt < 120) { capped.push(line); nodeCnt++; }
+          if (nodeCnt < 100) { capped.push(line); nodeCnt++; }
         } else if (/-->/.test(line)) {
-          if (edgeCnt < 200) { capped.push(line); edgeCnt++; }
+          if (edgeCnt < 180) { capped.push(line); edgeCnt++; }
         } else {
           capped.push(line);
         }
       }
-      capped.push('    note["⚠ Graph truncated for performance"]');
+      capped.push('    truncNote["⚠ Graph truncated — showing first 100 nodes"]');
       def = capped.join('\n');
     }
 
     mermaid.render(id, def)
       .then(({ svg: rendered }) => {
-        if (!cancelled) setSvg(rendered);
+        if (!cancelled) setSvg(portraitSvg(rendered));
       })
       .catch(err => {
         if (!cancelled) setError(String(err));
@@ -92,7 +101,7 @@ export function MermaidDiagram({ definition, id }: MermaidDiagramProps) {
   if (!svg) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: 'var(--text-muted)' }}>
-        <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block', marginRight: 10, fontSize: '1.2rem' }}>⟳</span>
+        <span style={{ display: 'inline-block', marginRight: 10, fontSize: '1.2rem', animation: 'spin 1s linear infinite' }}>⟳</span>
         Rendering diagram…
       </div>
     );
@@ -100,8 +109,14 @@ export function MermaidDiagram({ definition, id }: MermaidDiagramProps) {
 
   return (
     <div
-      ref={ref}
-      style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 600 }}
+      ref={wrapRef}
+      style={{
+        width: '100%',
+        overflowY: 'auto',   // scroll vertically (portrait)
+        overflowX: 'hidden', // no horizontal scroll
+        maxHeight: '75vh',
+        padding: '0.5rem 0',
+      }}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

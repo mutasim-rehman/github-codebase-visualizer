@@ -68,9 +68,9 @@ export default function App() {
     setDash(null);
   };
 
-  const handleSelectFile = (f: FileNode) => {
+  const handleSelectFile = (f: FileNode | null) => {
     setSelectedFile(f);
-    setMainView('overview'); // Switch out of diagrams view when a file is selected
+    if (f) setMainView('overview'); // Switch out of diagrams when a file is chosen
   };
 
   if (screen === 'landing') return <Landing onAnalyze={analyze} />;

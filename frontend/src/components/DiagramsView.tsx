@@ -260,7 +260,8 @@ function DiagramPanel({ tab, diagramSrc, radarData, radarOptions, hasHotspots }:
         </button>
       </div>
 
-      <div style={{ padding: '1.5rem' }}>
+      {/* Portrait diagram container — narrow column, tall vertical scroll */}
+      <div style={{ padding: '1.5rem 1.5rem 2rem' }}>
         {showSource ? (
           <pre style={{
             fontFamily: 'var(--font-mono)',
@@ -269,17 +270,20 @@ function DiagramPanel({ tab, diagramSrc, radarData, radarOptions, hasHotspots }:
             overflowX: 'auto',
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
-            maxHeight: 550,
+            maxHeight: '70vh',
             overflowY: 'auto',
           }}>
             {diagramSrc}
           </pre>
         ) : (
-          <MermaidDiagram
-            key={`${tab}-${diagramSrc.length}`}
-            definition={diagramSrc}
-            id={`mermaid-${tab}`}
-          />
+          /* maxWidth keeps the graph column narrow so TD layout renders portrait */
+          <div style={{ maxWidth: 900, margin: '0 auto' }}>
+            <MermaidDiagram
+              key={`${tab}-${diagramSrc.length}`}
+              definition={diagramSrc}
+              id={`mermaid-${tab}`}
+            />
+          </div>
         )}
       </div>
     </div>
