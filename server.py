@@ -7,6 +7,8 @@ from analyzer.git_utils import clone_repo
 from analyzer.core import analyze_directory
 from analyzer.hotspots import detect_hotspots
 from analyzer.git_history import analyze_git_history
+from analyzer.suggestions import get_file_suggestions
+from analyzer.core import LANG_MAP
 
 app = Flask(__name__)
 CORS(app)  # Allow the Vite dev server to call this API
@@ -78,6 +80,7 @@ def build_export_payload(stats, hotspots):
             "languages": languages_summary,
             "hotspots_count": len(hotspots),
             "duplicates_count": len(stats.get("duplicates", [])),
+            "session_path": stats.get("session_path", ""),
         },
         "diagrams": diagrams,
         "hotspot_radar": hotspot_radar,
@@ -452,12 +455,45 @@ def analyze():
 
     try:
         stats = analyze_directory(target_path)
+        stats["session_path"] = target_path
         stats["trend"] = analyze_git_history(target_path)
         hotspots = detect_hotspots(stats["all_files"])
         payload = build_export_payload(stats, hotspots)
         return jsonify(payload)
     except Exception as e:
         return jsonify({"error": f"Analysis failed: {str(e)}"}), 500
+
+
+@app.route("/api/file", methods=["GET"])
+def get_file():
+    session_path = request.args.get("session_path", "")
+    file_path = request.args.get("path", "")
+    
+    if not session_path or not file_path:
+        return jsonify({"error": "Missing session_path or path."}), 400
+        
+    if ".." in file_path:
+        return jsonify({"error": "Invalid path."}), 400
+        
+    full_path = os.path.join(session_path, file_path)
+    if not os.path.exists(full_path):
+        return jsonify({"error": "File not found."}), 404
+        
+    try:
+        with open(full_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            
+        _, ext = os.path.splitext(file_path)
+        lang = LANG_MAP.get(ext.lower(), "Other")
+        
+        suggestions = get_file_suggestions(full_path, content, lang)
+        
+        return jsonify({
+            "content": content,
+            "suggestions": suggestions
+        })
+    except Exception as e:
+        return jsonify({"error": f"Failed to read file: {str(e)}"}), 500
 
 
 @app.route("/api/health", methods=["GET"])

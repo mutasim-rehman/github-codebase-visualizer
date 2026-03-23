@@ -152,7 +152,7 @@ export default function App() {
         />
 
         <main className="main-content">
-          {showFileDash && <FileDashboard key={selectedFile!.path} file={selectedFile!} />}
+          {showFileDash && <FileDashboard key={selectedFile!.path} file={selectedFile!} sessionPath={data.stats.session_path} />}
           {showDiagrams && <DiagramsView data={data} />}
           {showOverview && <Overview data={data} onSelectFile={handleSelectFile} />}
         </main>

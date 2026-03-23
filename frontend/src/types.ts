@@ -18,6 +18,7 @@ export interface AppStats {
   languages: Record<string, number>;
   hotspots_count: number;
   duplicates_count: number;
+  session_path?: string;
 }
 
 export interface Diagrams {

@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import type { FileNode } from '../types';
 import RadarChart from './RadarChart';
+import CodeViewer from './CodeViewer';
 import { FileCode, Hash, Code2, Cpu, AlertTriangle } from 'lucide-react';
 
 interface FileDashboardProps {
   file: FileNode;
+  sessionPath?: string;
 }
 
 function riskBadgeClass(file: FileNode) {
@@ -17,20 +20,52 @@ function riskLabel(file: FileNode) {
   return `${file.risk} Risk`;
 }
 
-export default function FileDashboard({ file }: FileDashboardProps) {
+export default function FileDashboard({ file, sessionPath }: FileDashboardProps) {
   const filename = file.path.split(/[/\\]/).pop() ?? file.path;
+  const [viewMode, setViewMode] = useState<'metrics' | 'code'>('metrics');
 
   return (
-    <div className="file-dash">
-      <div className="file-dash-header">
-        <div className="file-dash-title">
-          <FileCode size={22} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-          {filename}
-          <span className={`risk-badge ${riskBadgeClass(file)}`}>
-            {riskLabel(file)}
-          </span>
+    <div className="file-dash" style={{ display: 'flex', flexDirection: 'column' }}>
+      <div className="file-dash-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div className="file-dash-title">
+            <FileCode size={22} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+            {filename}
+            <span className={`risk-badge ${riskBadgeClass(file)}`}>
+              {riskLabel(file)}
+            </span>
+          </div>
+          <div className="file-dash-path">{file.path}</div>
         </div>
-        <div className="file-dash-path">{file.path}</div>
+        
+        <div style={{ display: 'flex', gap: '8px', background: 'var(--surface)', padding: '4px', borderRadius: '6px' }}>
+          <button 
+            style={{ 
+              padding: '6px 12px', 
+              borderRadius: '4px',
+              border: 'none',
+              background: viewMode === 'metrics' ? 'var(--accent)' : 'transparent',
+              color: viewMode === 'metrics' ? '#fff' : 'var(--text-muted)',
+              cursor: 'pointer'
+            }}
+            onClick={() => setViewMode('metrics')}
+          >
+            Metrics
+          </button>
+          <button 
+             style={{ 
+              padding: '6px 12px', 
+              borderRadius: '4px',
+              border: 'none',
+              background: viewMode === 'code' ? 'var(--accent)' : 'transparent',
+              color: viewMode === 'code' ? '#fff' : 'var(--text-muted)',
+              cursor: 'pointer'
+            }}
+            onClick={() => setViewMode('code')}
+          >
+            View Code
+          </button>
+        </div>
       </div>
 
       <div className="metrics-row">
@@ -65,7 +100,13 @@ export default function FileDashboard({ file }: FileDashboardProps) {
         </div>
       </div>
 
-      <div className="dash-grid">
+      {viewMode === 'code' ? (
+        <div style={{ flex: 1, minHeight: 0, marginTop: '1rem' }}>
+          <CodeViewer file={file} sessionPath={sessionPath} />
+        </div>
+      ) : (
+      <>
+        <div className="dash-grid">
         {/* Radar Chart */}
         <div className="dash-panel">
           <div className="dash-panel-header">Complexity Profile</div>
@@ -137,6 +178,8 @@ export default function FileDashboard({ file }: FileDashboardProps) {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
