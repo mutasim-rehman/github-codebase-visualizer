@@ -58,6 +58,7 @@ def build_export_payload(stats, hotspots):
             "lang": lang,
             "risk": risk,
             "score": score,
+            "reasons": f.get("reasons", []),
             "is_dup": is_dup,
             "is_gen": is_gen,
             "functions": functions,

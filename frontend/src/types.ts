@@ -10,6 +10,7 @@ export interface FileNode {
   classes: { name: string; methods: number }[];
   imports: string[];
   radar: number[];
+  reasons?: string[];
 }
 
 export interface AppStats {

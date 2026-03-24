@@ -99,6 +99,17 @@ export default function FileDashboard({ file, sessionPath }: FileDashboardProps)
           </div>
         </div>
       </div>
+      
+      {file.reasons && file.reasons.length > 0 && (
+        <div style={{ margin: '0 1.5rem 1rem', padding: '0.75rem', background: 'var(--surface)', borderLeft: '3px solid var(--warning)', borderRadius: '4px', fontSize: '0.9rem' }}>
+          <div style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+             <AlertTriangle size={14} style={{ color: 'var(--warning)' }} /> Risk Factors
+          </div>
+          <ul style={{ margin: 0, paddingLeft: '1.2rem', color: 'var(--text-secondary)' }}>
+            {file.reasons.map((r, i) => <li key={i}>{r}</li>)}
+          </ul>
+        </div>
+      )}
 
       {viewMode === 'code' ? (
         <div style={{ flex: 1, minHeight: 0, marginTop: '1rem' }}>

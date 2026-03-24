@@ -63,6 +63,7 @@ def detect_hotspots(files_list):
                     reasons.append(f"Too many functions/hooks ({len(ts_metrics['functions'])})")
                 
         f["score"] = score
+        f["reasons"] = reasons
         if score >= 4:
             f["risk_level"] = "High"
         elif score >= 2:
