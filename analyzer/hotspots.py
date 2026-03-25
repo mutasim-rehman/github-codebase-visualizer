@@ -11,11 +11,25 @@ def detect_hotspots(files_list):
     for f in files_list:
         score = 0
         reasons = []
+        recommendations = []
         
+        # Duplication heuristic
+        if f.get("is_duplicate"):
+            score += 3
+            reasons.append("Duplicate file")
+            recommendations.append({
+                "issue": "Duplicate file",
+                "action": "Abstract common logic into a shared utility or remove one of the copies."
+            })
+            
         # LOC heuristics
         if f["loc"] > 500:
             score += 1
             reasons.append(f"Large file ({f['loc']} lines)")
+            recommendations.append({
+                "issue": f"Large file ({f['loc']} lines)",
+                "action": "Consider splitting this file into smaller, logical modules or components."
+            })
         if f["loc"] > 1000:
             score += 2
             
@@ -28,21 +42,37 @@ def detect_hotspots(files_list):
                 if ast_metrics["max_nesting"] > 3:
                     score += 2
                     reasons.append(f"Deep nesting (depth {ast_metrics['max_nesting']})")
+                    recommendations.append({
+                        "issue": f"Deep nesting (depth {ast_metrics['max_nesting']})",
+                        "action": "Extract deeply nested blocks into separate helper functions to reduce cyclomatic complexity."
+                    })
                 
                 lf = ast_metrics["longest_function"]
                 if lf["loc"] > 100:
                     score += 1
                     reasons.append(f"Long function '{lf['name']}' ({lf['loc']} lines)")
+                    recommendations.append({
+                        "issue": f"Long function '{lf['name']}' ({lf['loc']} lines)",
+                        "action": "Refactor the function by extracting reusable parts into smaller functions."
+                    })
                     
                 pf = ast_metrics.get("problematic_functions", [])
                 score += len(pf) * 2
                 for p in pf:
                     reasons.append(f"Problematic func '{p['name']}' (LOC: {p['loc']}, Nesting: {p['nesting']})")
+                    recommendations.append({
+                        "issue": f"Problematic func '{p['name']}' (LOC: {p['loc']}, Nesting: {p['nesting']})",
+                        "action": "Refactor this function to reduce both its length and nesting depth."
+                    })
                     
                 deps = ast_metrics.get("imports", [])
                 if len(deps) > 15:
                     score += 1
                     reasons.append(f"High coupling ({len(deps)} imports)")
+                    recommendations.append({
+                        "issue": f"High coupling ({len(deps)} imports)",
+                        "action": "Introduce a facade or use dependency injection to reduce the number of direct imports."
+                    })
                     
                 f["imports"] = deps
                 f["classes"] = ast_metrics["classes"]
@@ -58,12 +88,22 @@ def detect_hotspots(files_list):
                 if len(ts_metrics.get("classes", [])) > 5:
                     score += 1
                     reasons.append(f"Too many classes/components ({len(ts_metrics['classes'])})")
+                    recommendations.append({
+                        "issue": f"Too many classes/components ({len(ts_metrics['classes'])})",
+                        "action": "Split into separate files per component/class to improve maintainability."
+                    })
                 if len(ts_metrics.get("functions", [])) > 15:
                     score += 1
                     reasons.append(f"Too many functions/hooks ({len(ts_metrics['functions'])})")
+                    recommendations.append({
+                        "issue": f"Too many functions/hooks ({len(ts_metrics['functions'])})",
+                        "action": "Extract related functions into custom hooks or utility modules."
+                    })
                 
         f["score"] = score
         f["reasons"] = reasons
+        f["recommendations"] = recommendations
+        
         if score >= 4:
             f["risk_level"] = "High"
         elif score >= 2:
@@ -77,6 +117,7 @@ def detect_hotspots(files_list):
                 "path": f["path"],
                 "score": score,
                 "reasons": reasons,
+                "recommendations": recommendations,
                 "loc": f["loc"],
                 "risk_level": f["risk_level"]
             })

@@ -56,6 +56,35 @@ export default function Overview({ data, onSelectFile }: OverviewProps) {
         </div>
       </div>
 
+      {/* Priority Action Items */}
+      {hotfiles.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertTriangle size={18} style={{ color: 'var(--danger)' }} /> Priority Action Items
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {hotfiles.slice(0, 5).map(f => (
+              <div key={f.path} className="hotspot-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '1rem', borderLeft: '4px solid var(--danger)', cursor: 'pointer' }} onClick={() => onSelectFile(f)}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="hotspot-name" style={{ fontSize: '1rem', fontWeight: 600 }}>{f.path.split(/[/\\]/).pop()}</div>
+                  <div className={`risk-badge ${f.is_dup ? 'Dup' : f.risk}`}>{f.is_dup ? 'Duplicate' : f.risk + ' Risk'}</div>
+                </div>
+                {f.recommendations && f.recommendations.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-app)', padding: '0.8rem', borderRadius: '4px' }}>
+                    {f.recommendations.map((rec, i) => (
+                      <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.85rem' }}>
+                        <div style={{ color: 'var(--text-primary)', fontWeight: 500 }}>• {rec.issue}</div>
+                        <div style={{ color: 'var(--text-secondary)', paddingLeft: '10px' }}>↳ {rec.action}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Language Bar */}
       {langs.length > 0 && (
         <div className="lang-section">

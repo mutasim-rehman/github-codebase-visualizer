@@ -11,6 +11,7 @@ export interface FileNode {
   imports: string[];
   radar: number[];
   reasons?: string[];
+  recommendations?: { issue: string; action: string; }[];
 }
 
 export interface AppStats {
