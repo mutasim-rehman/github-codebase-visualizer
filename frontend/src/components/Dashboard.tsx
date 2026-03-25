@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FileNode } from '../types';
 import RadarChart from './RadarChart';
 import CodeViewer from './CodeViewer';
-import { FileCode, Hash, Code2, Cpu, AlertTriangle } from 'lucide-react';
+import { FileCode, Hash, Code2, Cpu, AlertTriangle, Network } from 'lucide-react';
 
 interface FileDashboardProps {
   file: FileNode;
@@ -80,6 +80,10 @@ export default function FileDashboard({ file, sessionPath }: FileDashboardProps)
         <div className="metric-tile">
           <div className="metric-tile-label"><Cpu size={12} /> Functions</div>
           <div className="metric-tile-value">{file.functions.length}</div>
+        </div>
+        <div className="metric-tile">
+          <div className="metric-tile-label"><Network size={12} /> Blast Radius</div>
+          <div className="metric-tile-value">{file.impact?.blast_radius ?? 0} files</div>
         </div>
         <div className="metric-tile">
           <div className="metric-tile-label"><AlertTriangle size={12} /> Risk Score</div>
@@ -188,6 +192,40 @@ export default function FileDashboard({ file, sessionPath }: FileDashboardProps)
             </div>
           </div>
         </div>
+
+        {/* Impact Panel */}
+        {file.impact && (
+          <div className="dash-panel" style={{ gridColumn: '1 / -1' }}>
+            <div className="dash-panel-header">Impact Analysis (Blast Radius)</div>
+            <div className="dash-panel-body" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.5rem' }}>
+              <div className="detail-section">
+                <div className="detail-section-title">Upstream (Dependents, ~{file.impact.blast_radius} transitively)</div>
+                {file.impact.upstream.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {file.impact.upstream.map((up, i) => (
+                      <div key={i} style={{ background: 'var(--surface-hover)', padding: '6px 12px', borderRadius: '4px', fontSize: '0.85rem', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>{up}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-detail">No internal files import this. Safe to modify.</div>
+                )}
+              </div>
+
+              <div className="detail-section">
+                <div className="detail-section-title">Downstream (Dependencies)</div>
+                {file.impact.downstream.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {file.impact.downstream.map((down, i) => (
+                      <div key={i} style={{ background: 'var(--surface-hover)', padding: '6px 12px', borderRadius: '4px', fontSize: '0.85rem', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>{down}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="empty-detail">This file relies on no other internal files.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       </>
       )}

@@ -10,6 +10,7 @@ export interface FileNode {
   classes: { name: string; methods: number }[];
   imports: string[];
   radar: number[];
+  impact?: { upstream: string[]; downstream: string[]; blast_radius: number; };
   reasons?: string[];
   recommendations?: { issue: string; action: string; }[];
 }
