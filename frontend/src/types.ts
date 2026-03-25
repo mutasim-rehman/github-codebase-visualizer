@@ -42,9 +42,18 @@ export interface HotspotRadar {
   datasets: HotspotRadarDataset[];
 }
 
+export interface ArchitectureIssue {
+  title: string;
+  severity: string;
+  description: string;
+  files: string[];
+  recommendation: string;
+}
+
 export interface AppData {
   files: FileNode[];
   stats: AppStats;
   diagrams: Diagrams;
   hotspot_radar: HotspotRadar;
+  architecture_issues: ArchitectureIssue[];
 }

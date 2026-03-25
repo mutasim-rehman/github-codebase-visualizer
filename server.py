@@ -9,13 +9,14 @@ from analyzer.hotspots import detect_hotspots
 from analyzer.git_history import analyze_git_history
 from analyzer.suggestions import get_file_suggestions
 from analyzer.impact import build_impact_graph
+from analyzer.architecture import detect_architecture_issues
 from analyzer.core import LANG_MAP
 
 app = Flask(__name__)
 CORS(app)  # Allow the Vite dev server to call this API
 
 
-def build_export_payload(stats, hotspots, impact_map):
+def build_export_payload(stats, hotspots, impact_map, architecture_issues):
     """Converts raw stats + hotspots into a clean JSON payload for the frontend."""
     all_files = stats["all_files"]
     file_data = []
@@ -88,6 +89,7 @@ def build_export_payload(stats, hotspots, impact_map):
         },
         "diagrams": diagrams,
         "hotspot_radar": hotspot_radar,
+        "architecture_issues": architecture_issues,
     }
 
 
@@ -463,7 +465,8 @@ def analyze():
         stats["trend"] = analyze_git_history(target_path)
         hotspots = detect_hotspots(stats["all_files"])
         impact_map = build_impact_graph(stats["all_files"])
-        payload = build_export_payload(stats, hotspots, impact_map)
+        architecture_issues = detect_architecture_issues(stats["all_files"], impact_map)
+        payload = build_export_payload(stats, hotspots, impact_map, architecture_issues)
         return jsonify(payload)
     except Exception as e:
         return jsonify({"error": f"Analysis failed: {str(e)}"}), 500

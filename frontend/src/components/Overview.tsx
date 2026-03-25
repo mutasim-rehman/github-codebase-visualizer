@@ -56,6 +56,32 @@ export default function Overview({ data, onSelectFile }: OverviewProps) {
         </div>
       </div>
 
+      {/* Architecture Health */}
+      {data.architecture_issues && data.architecture_issues.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertTriangle size={18} style={{ color: 'var(--warning)' }} /> Architecture Health & Warnings
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {data.architecture_issues.map((issue, i) => (
+              <div key={i} className={`hotspot-card`} style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '1rem', borderLeft: `4px solid ${issue.severity === 'High' ? 'var(--danger)' : 'var(--warning)'}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="hotspot-name" style={{ fontSize: '1.1rem', fontWeight: 600 }}>{issue.title}</div>
+                  <div className={`risk-badge ${issue.severity === 'High' ? 'High' : 'Medium'}`}>{issue.severity} Severity</div>
+                </div>
+                <div style={{ color: 'var(--text-secondary)' }}>{issue.description}</div>
+                {issue.files && issue.files.length > 0 && (
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Files: {issue.files.join(', ')}</div>
+                )}
+                <div style={{ marginTop: '0.5rem', padding: '0.8rem', background: 'var(--bg-app)', borderRadius: '4px', fontSize: '0.9rem', color: 'var(--text-primary)', borderLeft: '3px solid var(--accent)' }}>
+                  <strong>Recommendation:</strong> {issue.recommendation}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Priority Action Items */}
       {hotfiles.length > 0 && (
         <div style={{ marginBottom: '2rem' }}>
